@@ -30,15 +30,24 @@ if uploaded_file is not None:
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-
         # Load the saved model and scaler (using relative paths)
         best_model = joblib.load('best_model.joblib')
         scaler = joblib.load('scaler.joblib')
 
-        # Input fields ... (same as before) ...
+        # Input fields
+        temp = st.number_input("Temperature", min_value=-20, max_value=50)
+        humidity = st.number_input("Humidity", min_value=0, max_value=100)
+        wind_speed = st.number_input("Wind Speed", min_value=0, max_value=50)
+        cloud_cover = st.number_input("Cloud Cover", min_value=0, max_value=100)
+        pressure = st.number_input("Pressure", min_value=900, max_value=1100)
 
         if st.button("Predict"):
-            #Prediction code (same as before)...
+            new_data = np.array([[temp, humidity, wind_speed, cloud_cover, pressure]])
+            new_data_scaled = scaler.transform(new_data)
+            prediction = best_model.predict(new_data_scaled)[0]
+            probability = best_model.predict_proba(new_data_scaled)[0, 1]
+            st.write(f"Rain Prediction: {'Rain' if prediction == 1 else 'No rain'}")
+            st.write(f"Probability of Rain: {probability:.2f}")
 
     except FileNotFoundError:
         st.error("Error: Could not find the saved model file. Please ensure 'best_model.joblib' and 'scaler.joblib' are in the same directory as your Streamlit script.")
