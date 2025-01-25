@@ -44,8 +44,8 @@ if uploaded_file is not None:
         X_test_scaled = scaler.transform(X_test)
 
         # Load the saved model and scaler
-        model_path = "best_model.joblib"
-        scaler_path = "scaler.joblib"
+        model_path = "best_model.joblib.py"
+        scaler_path = "scaler.joblib.py"
 
         try:
             best_model = joblib.load(model_path)
