@@ -40,6 +40,7 @@ if uploaded_file is not None:
             'unknown': 'Unknown'
         }
 
+
         try:
             df['Incident_Type'] = df[attack_type_column].map(attack_mapping).fillna('Unknown')
         except KeyError as e:
@@ -53,3 +54,5 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
+        unique_attack_types = df['Attack Type'].unique()
+st.write(unique_attack_types) #This will display the unique values in your Streamlit app
