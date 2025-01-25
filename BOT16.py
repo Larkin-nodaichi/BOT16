@@ -35,6 +35,7 @@ if uploaded_file is not None:
             le = LabelEncoder()
             df['Rain'] = le.fit_transform(df['Rain'])
 
+        # Separate features and target
         X = df.drop('Rain', axis=1)
         y = df['Rain']
 
@@ -53,10 +54,19 @@ if uploaded_file is not None:
         # Save the model and scaler
         model_file = "best_model.joblib"
         scaler_file = "scaler.joblib"
-        joblib.dump(model, model_file)
-        joblib.dump(scaler, scaler_file)
 
-        st.success(f"Model and scaler trained and saved successfully as '{model_file}' and '{scaler_file}'.")
+        # Ensure the model and scaler are being saved in the current directory, 
+        # but ensure the directory exists
+        if not os.path.exists('models'):
+            os.mkdir('models')
+
+        model_file_path = os.path.join('models', model_file)
+        scaler_file_path = os.path.join('models', scaler_file)
+
+        joblib.dump(model, model_file_path)
+        joblib.dump(scaler, scaler_file_path)
+
+        st.success(f"Model and scaler trained and saved successfully as '{model_file_path}' and '{scaler_file_path}'.")
 
         # Predict new inputs
         st.header("Predict Weather Conditions")
@@ -80,4 +90,5 @@ if uploaded_file is not None:
 
 else:
     st.write("Please upload a CSV file.")
+
 
