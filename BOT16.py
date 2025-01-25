@@ -29,6 +29,9 @@ if uploaded_file is not None:
             st.error("Error: Could not find a column matching 'Attack Type'. Please check your data.")
             st.stop()
 
+        # Get unique attack types BEFORE creating Incident_Type
+        unique_attack_types = df[attack_type_column].unique()
+        st.write("Unique Attack Types:", unique_attack_types)
 
         attack_mapping = {
             'phishing': 'Phishing',
@@ -39,7 +42,6 @@ if uploaded_file is not None:
             'brute force': 'Brute Force',
             'unknown': 'Unknown'
         }
-
 
         try:
             df['Incident_Type'] = df[attack_type_column].map(attack_mapping).fillna('Unknown')
@@ -54,5 +56,3 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
-        unique_attack_types = df['Attack Type'].unique()
-st.write(unique_attack_types) #This will display the unique values in your Streamlit app
