@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
 import joblib
@@ -40,15 +40,18 @@ if uploaded_file is not None:
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        # Model Training and Evaluation (This part is now done outside of Streamlit)
-        # ... (Load the pre-trained model and scaler here) ...
-
         # Load the saved model and scaler
-        best_model = joblib.load('best_model.joblib')
-        scaler = joblib.load('scaler.joblib')
+        model_path = "best_model.joblib"
+        scaler_path = "scaler.joblib"
 
+        try:
+            best_model = joblib.load(model_path)
+            scaler = joblib.load(scaler_path)
+        except FileNotFoundError:
+            st.error("Error: Model files not found. Train the model first and save it as 'best_model.joblib' and 'scaler.joblib'")
+            st.stop()
 
-        # Input fields
+        # Input fields (moved BEFORE the button)
         temp = st.number_input("Temperature", min_value=-20, max_value=50)
         humidity = st.number_input("Humidity", min_value=0, max_value=100)
         wind_speed = st.number_input("Wind Speed", min_value=0, max_value=50)
@@ -64,7 +67,7 @@ if uploaded_file is not None:
             st.write(f"Probability of Rain: {probability:.2f}")
 
     except FileNotFoundError:
-        st.error("Error: Could not find the saved model file. Please ensure 'best_model.joblib' and 'scaler.joblib' are in the same directory as your Streamlit script.")
+        st.error("Error: Could not find the CSV file.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
