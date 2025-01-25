@@ -19,19 +19,30 @@ if uploaded_file is not None:
         df = pd.read_csv(uploaded_file, encoding='utf-8', on_bad_lines='skip')
 
         # --- Create Incident_Type column ---
-        attack_mapping = {
+        # Choose ONE of the following mappings.  Comment out the one you don't use.
+
+        attack_mapping = {  #Mapping 1
             'email': 'Phishing',
             'malware_download': 'Malware',
             'dos_attack': 'DoS',
             'ransomware_attack': 'Ransomware',
-            # Add more mappings as needed based on your data
-            'unknown': 'Unknown' # Handle cases where the attack vector is not clear
+            'unknown': 'Unknown' 
         }
+
+        attack_mapping = { #Mapping 2
+            'phishing_email': 'Phishing',
+            'malware_infection': 'Malware',
+            'dos_attack': 'DoS',
+            'ransomware': 'Ransomware',
+            'data_breach': 'Data Breach',
+            'other': 'Other' 
+        }
+
+
         df['Incident_Type'] = df['Attack_Vector'].map(attack_mapping).fillna('Unknown')
 
-
         # Preprocessing and Feature Engineering
-        df.fillna(method='ffill', inplace=True)  # Fill remaining NaN values
+        df.fillna(method='ffill', inplace=True)
 
         numerical_cols = df.select_dtypes(include=np.number).columns
         categorical_cols = df.select_dtypes(exclude=np.number).columns
@@ -45,13 +56,32 @@ if uploaded_file is not None:
                 ('cat', categorical_transformer, categorical_cols)
             ])
 
-        X = df.drop('Incident_Type', axis=1)  #Incident_Type is now a feature!
+        X = df.drop('Incident_Type', axis=1)
         y = df['Incident_Type']
 
         X_processed = preprocessor.fit_transform(X)
 
-        # Model Training and Evaluation (rest of your code remains the same)
-        # ... (your existing model training and evaluation code) ...
+        # Model Training and Evaluation
+        X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
+        model = RandomForestClassifier(random_state=42)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        accuracy = accuracy_score(y_test, y_pred)
+        report = classification_report(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
+
+        st.subheader("Model Performance")
+        st.write(f"Accuracy: {accuracy:.4f}")
+        st.write("Classification Report:\n", report)
+        st.write("Confusion Matrix:\n", cm)
+
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=model.classes_, yticklabels=model.classes_)
+        plt.xlabel('Predicted')
+        plt.ylabel('Actual')
+        plt.title('Confusion Matrix')
+        st.pyplot(plt)
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
