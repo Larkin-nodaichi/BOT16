@@ -1,6 +1,3 @@
-import joblib
-joblib.dump(best_model, 'best_model.joblib')
-joblib.dump(scaler, 'scaler.joblib')
 
 import pandas as pd
 import numpy as np
