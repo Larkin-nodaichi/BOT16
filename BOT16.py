@@ -18,28 +18,30 @@ if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file, encoding='utf-8', on_bad_lines='skip')
 
-        # --- Create Incident_Type column ---
-        # Choose ONE of the following mappings.  Comment out the one you don't use.
-
-        attack_mapping = {  #Mapping 1
+        # --- Choose ONE mapping and uncomment it ---
+        attack_mapping = {  # Mapping 1 (Example)
             'email': 'Phishing',
             'malware_download': 'Malware',
             'dos_attack': 'DoS',
             'ransomware_attack': 'Ransomware',
-            'unknown': 'Unknown' 
+            'unknown': 'Unknown'
         }
 
-        attack_mapping = { #Mapping 2
-            'phishing_email': 'Phishing',
-            'malware_infection': 'Malware',
-            'dos_attack': 'DoS',
-            'ransomware': 'Ransomware',
-            'data_breach': 'Data Breach',
-            'other': 'Other' 
-        }
+        # attack_mapping = {  # Mapping 2 (Example)
+        #     'phishing_email': 'Phishing',
+        #     'malware_infection': 'Malware',
+        #     'dos_attack': 'DoS',
+        #     'ransomware': 'Ransomware',
+        #     'data_breach': 'Data Breach',
+        #     'other': 'Other'
+        # }
 
-
-        df['Incident_Type'] = df['Attack_Vector'].map(attack_mapping).fillna('Unknown')
+        #Check if the column exists before trying to use it
+        if 'Attack_Vector' in df.columns:
+            df['Incident_Type'] = df['Attack_Vector'].map(attack_mapping).fillna('Unknown')
+        else:
+            st.error("Error: 'Attack_Vector' column not found in the dataset. Please ensure the column exists or choose a different column for incident type mapping.")
+            st.stop()
 
         # Preprocessing and Feature Engineering
         df.fillna(method='ffill', inplace=True)
