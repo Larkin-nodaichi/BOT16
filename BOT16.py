@@ -18,9 +18,9 @@ if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file, encoding='utf-8', on_bad_lines='skip')
 
-        #Check if 'Attack Type' column exists; if not, handle the error gracefully
+        # Check for the column, handling case where it might not exist
         if 'Attack Type' not in df.columns:
-            st.error("Error: 'Attack Type' column not found in the dataset. Please check your data.")
+            st.error("Error: 'Attack Type' column not found. Please check your data.")
             st.stop()
 
         #Improved mapping with better error handling
@@ -34,11 +34,14 @@ if uploaded_file is not None:
             'unknown': 'Unknown'
         }
 
-        #Create Incident_Type column, handling potential errors
         try:
+            #Handle potential errors during mapping
             df['Incident_Type'] = df['Attack Type'].map(attack_mapping).fillna('Unknown')
         except KeyError as e:
-            st.error(f"Error: Key '{e}' not found in attack_mapping. Check your 'Attack Type' column values.")
+            st.error(f"Error during mapping: Key '{e}' not found in attack_mapping. Check your 'Attack Type' column values and the attack_mapping dictionary.")
+            st.stop()
+        except Exception as e:
+            st.error(f"An unexpected error occurred during mapping: {e}")
             st.stop()
 
         # Preprocessing and Feature Engineering
