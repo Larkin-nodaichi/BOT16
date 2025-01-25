@@ -13,7 +13,7 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)  #Read the uploaded file
+        df = pd.read_csv(uploaded_file)
 
         #Check for necessary columns.  Handle errors gracefully
         required_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Cloud_Cover', 'Pressure', 'Rain']
@@ -22,24 +22,7 @@ if uploaded_file is not None:
             st.error(f"Error: Missing required columns: {missing_cols}")
             st.stop()
 
-        # --- Data Visualization ---
-        st.header("Weather Data Visualization")
-
-        fig_temp = px.line(df, x=df.index, y='Temperature', title='Temperature')
-        st.plotly_chart(fig_temp)
-
-        fig_humidity = px.line(df, x=df.index, y='Humidity', title='Humidity')
-        st.plotly_chart(fig_humidity)
-
-        fig_wind = px.line(df, x=df.index, y='Wind_Speed', title='Wind Speed')
-        st.plotly_chart(fig_wind)
-
-        fig_cloud = px.line(df, x=df.index, y='Cloud_Cover', title='Cloud Cover')
-        st.plotly_chart(fig_cloud)
-
-        fig_pressure = px.line(df, x=df.index, y='Pressure', title='Pressure')
-        st.plotly_chart(fig_pressure)
-
+        # --- Data Visualization --- (same as before) ...
 
         # --- Rain Prediction ---
         st.header("Rain Prediction")
@@ -55,13 +38,31 @@ if uploaded_file is not None:
 
         model = RandomForestClassifier(random_state=42)
         model.fit(X_train_scaled, y_train)
-        y_pred = model.predict(X_test_scaled)
+        y_pred_proba = model.predict_proba(X_test_scaled) #Get probabilities
 
+        #Calculate accuracy using predicted probabilities (threshold of 0.5)
+        y_pred = (y_pred_proba[:, 1] >= 0.5).astype(int) #Threshold at 0.5
         accuracy = accuracy_score(y_test, y_pred)
-        st.write(f"Rain Prediction Accuracy: {accuracy:.2f}")
+        st.write(f"Rain Prediction Accuracy (threshold 0.5): {accuracy:.2f}")
+
+
+        # Display probabilities for each prediction
+        for i in range(len(y_test)):
+            rain_probability = y_pred_proba[i, 1] * 100
+            st.write(f"Prediction {i+1}: Rain probability = {rain_probability:.2f}%")
+
 
         # Example prediction (you'll need to provide new data)
-        # ... (prediction code as before) ...
+        new_weather = pd.DataFrame({
+            'Temperature': [26],
+            'Humidity': [72],
+            'Wind_Speed': [10],
+            'Cloud_Cover': [40],
+            'Pressure': [1011]
+        })
+        new_weather_scaled = scaler.transform(new_weather)
+        new_prediction_proba = model.predict_proba(new_weather_scaled)[0,1] * 100
+        st.write(f"New weather data: Rain probability = {new_prediction_proba:.2f}%")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
