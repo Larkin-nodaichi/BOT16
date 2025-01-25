@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 st.title("Weather Forecast Visualization and Rain Prediction")
@@ -13,29 +13,33 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_csv(uploaded_file)  #Read the uploaded file
 
-        # Check for necessary columns and handle missing columns gracefully
+        #Check for necessary columns.  Handle errors gracefully
         required_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Cloud_Cover', 'Pressure', 'Rain']
         missing_cols = set(required_cols) - set(df.columns)
         if missing_cols:
             st.error(f"Error: Missing required columns: {missing_cols}")
             st.stop()
 
-        #Clean and convert 'Rain' column to numeric (0 and 1)
-        if df['Rain'].dtype == object:
-            df['Rain'] = df['Rain'].str.lower().replace({'rain': 1, 'no rain': 0})
-            #Check for non-numeric values after cleaning
-            if not pd.to_numeric(df['Rain'], errors='coerce').notnull().all():
-                st.error("Error: Invalid values in 'Rain' column.  Please ensure it contains only 'rain' or 'no rain'.")
-                st.stop()
-            df['Rain'] = pd.to_numeric(df['Rain'])
-        elif not pd.to_numeric(df['Rain'], errors='coerce').notnull().all():
-            st.error("Error: Invalid values in 'Rain' column. Please ensure it contains only 0 or 1.")
-            st.stop()
+        # --- Data Visualization ---
+        st.header("Weather Data Visualization")
 
+        fig_temp = px.line(df, x=df.index, y='Temperature', title='Temperature')
+        st.plotly_chart(fig_temp)
 
-        # --- Data Visualization --- (same as before) ...
+        fig_humidity = px.line(df, x=df.index, y='Humidity', title='Humidity')
+        st.plotly_chart(fig_humidity)
+
+        fig_wind = px.line(df, x=df.index, y='Wind_Speed', title='Wind Speed')
+        st.plotly_chart(fig_wind)
+
+        fig_cloud = px.line(df, x=df.index, y='Cloud_Cover', title='Cloud Cover')
+        st.plotly_chart(fig_cloud)
+
+        fig_pressure = px.line(df, x=df.index, y='Pressure', title='Pressure')
+        st.plotly_chart(fig_pressure)
+
 
         # --- Rain Prediction ---
         st.header("Rain Prediction")
@@ -51,21 +55,10 @@ if uploaded_file is not None:
 
         model = RandomForestClassifier(random_state=42)
         model.fit(X_train_scaled, y_train)
-        y_pred_proba = model.predict_proba(X_test_scaled)
-        y_pred = (y_pred_proba[:, 1] >= 0.5).astype(int)
+        y_pred = model.predict(X_test_scaled)
 
         accuracy = accuracy_score(y_test, y_pred)
-        report = classification_report(y_test, y_pred)
-        cm = confusion_matrix(y_test, y_pred)
-
-        st.write(f"Rain Prediction Accuracy (threshold 0.5): {accuracy:.2f}")
-        st.write("Classification Report:\n", report)
-        st.write("Confusion Matrix:\n", cm)
-
-        # Display probabilities for each prediction
-        for i in range(len(y_test)):
-            rain_probability = y_pred_proba[i, 1] * 100
-            st.write(f"Prediction {i+1}: Rain probability = {rain_probability:.2f}%")
+        st.write(f"Rain Prediction Accuracy: {accuracy:.2f}")
 
         # Example prediction (you'll need to provide new data)
         # ... (prediction code as before) ...
