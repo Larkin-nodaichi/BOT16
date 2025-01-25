@@ -30,16 +30,12 @@ if uploaded_file is not None:
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        # Load the saved model and scaler (using relative paths)
-        best_model = joblib.load('best_model.joblib')
-        scaler = joblib.load('scaler.joblib')
+        # Load the saved model and scaler using ABSOLUTE paths
+        model_dir = "/path/to/your/model/directory" # **REPLACE THIS WITH THE ABSOLUTE PATH**
+        best_model = joblib.load(os.path.join(model_dir, 'best_model.joblib'))
+        scaler = joblib.load(os.path.join(model_dir, 'scaler.joblib'))
 
-        # Input fields
-        temp = st.number_input("Temperature", min_value=-20, max_value=50)
-        humidity = st.number_input("Humidity", min_value=0, max_value=100)
-        wind_speed = st.number_input("Wind Speed", min_value=0, max_value=50)
-        cloud_cover = st.number_input("Cloud Cover", min_value=0, max_value=100)
-        pressure = st.number_input("Pressure", min_value=900, max_value=1100)
+        # Input fields ... (same as before) ...
 
         if st.button("Predict"):
             new_data = np.array([[temp, humidity, wind_speed, cloud_cover, pressure]])
@@ -50,7 +46,7 @@ if uploaded_file is not None:
             st.write(f"Probability of Rain: {probability:.2f}")
 
     except FileNotFoundError:
-        st.error("Error: Could not find the saved model file. Please ensure 'best_model.joblib' and 'scaler.joblib' are in the same directory as your Streamlit script.")
+        st.error("Error: Could not find the saved model file.  Please check the absolute path.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
