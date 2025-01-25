@@ -27,14 +27,14 @@ if uploaded_file is not None:
             'unknown': 'Unknown'
         }
 
-        # attack_mapping = {  # Mapping 2 (Example)
-        #     'phishing_email': 'Phishing',
-        #     'malware_infection': 'Malware',
-        #     'dos_attack': 'DoS',
-        #     'ransomware': 'Ransomware',
-        #     'data_breach': 'Data Breach',
-        #     'other': 'Other'
-        # }
+         attack_mapping = {  # Mapping 2 (Example)
+             'phishing_email': 'Phishing',
+            'malware_infection': 'Malware',
+            'dos_attack': 'DoS',
+         'ransomware': 'Ransomware',
+            'data_breach': 'Data Breach',
+            'other': 'Other'
+         }
 
         #Check if the column exists before trying to use it
         if 'Attack_Vector' in df.columns:
