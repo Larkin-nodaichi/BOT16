@@ -1,58 +1,69 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-import seaborn as sns
-import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
 
-st.title("Cybersecurity Incident Prediction App")
+st.title("Weather Forecast Visualization and Rain Prediction")
 
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file, encoding='utf-8', on_bad_lines='skip')
+        df = pd.read_csv(uploaded_file)  #Read the uploaded file
 
-        #Check if 'Attack Type' column exists (case-insensitive)
-        if 'attack type' not in [col.lower() for col in df.columns]:
-            st.error("Error: 'Attack Type' column not found in the dataset. Please check your data.")
+        #Check for necessary columns.  Handle errors gracefully
+        required_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Cloud_Cover', 'Pressure', 'Rain']
+        missing_cols = set(required_cols) - set(df.columns)
+        if missing_cols:
+            st.error(f"Error: Missing required columns: {missing_cols}")
             st.stop()
 
-        # Find the closest matching column name (case-insensitive)
-        attack_type_column = next((col for col in df.columns if col.lower() == 'attack type'), None)
-        if attack_type_column is None:
-            st.error("Error: Could not find a column matching 'Attack Type'. Please check your data.")
-            st.stop()
+        # --- Data Visualization ---
+        st.header("Weather Data Visualization")
 
-        # Get unique attack types BEFORE creating Incident_Type
-        unique_attack_types = df[attack_type_column].unique()
-        st.write("Unique Attack Types:", unique_attack_types)
+        fig_temp = px.line(df, x=df.index, y='Temperature', title='Temperature')
+        st.plotly_chart(fig_temp)
 
-        attack_mapping = {
-            'phishing': 'Phishing',
-            'malware': 'Malware',
-            'dos': 'DoS',
-            'ransomware': 'Ransomware',
-            'sql injection': 'SQL Injection',
-            'brute force': 'Brute Force',
-            'unknown': 'Unknown'
-        }
+        fig_humidity = px.line(df, x=df.index, y='Humidity', title='Humidity')
+        st.plotly_chart(fig_humidity)
 
-        try:
-            df['Incident_Type'] = df[attack_type_column].map(attack_mapping).fillna('Unknown')
-        except KeyError as e:
-            st.error(f"Error: Key '{e}' not found in attack_mapping. Check your 'Attack Type' column values.")
-            st.stop()
-        except Exception as e:
-            st.error(f"An unexpected error occurred during mapping: {e}")
-            st.stop()
+        fig_wind = px.line(df, x=df.index, y='Wind_Speed', title='Wind Speed')
+        st.plotly_chart(fig_wind)
 
-        # ... (rest of your preprocessing and model training code) ...
+        fig_cloud = px.line(df, x=df.index, y='Cloud_Cover', title='Cloud Cover')
+        st.plotly_chart(fig_cloud)
+
+        fig_pressure = px.line(df, x=df.index, y='Pressure', title='Pressure')
+        st.plotly_chart(fig_pressure)
+
+
+        # --- Rain Prediction ---
+        st.header("Rain Prediction")
+
+        X = df.drop('Rain', axis=1)
+        y = df['Rain']
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+
+        model = RandomForestClassifier(random_state=42)
+        model.fit(X_train_scaled, y_train)
+        y_pred = model.predict(X_test_scaled)
+
+        accuracy = accuracy_score(y_test, y_pred)
+        st.write(f"Rain Prediction Accuracy: {accuracy:.2f}")
+
+        # Example prediction (you'll need to provide new data)
+        # ... (prediction code as before) ...
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
+else:
+    st.write("Please upload a CSV file.")
