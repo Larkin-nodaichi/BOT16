@@ -15,17 +15,25 @@ if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file)
 
-        #Check for necessary columns. Handle errors gracefully.
+        # Check for necessary columns and handle missing columns gracefully
         required_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Cloud_Cover', 'Pressure', 'Rain']
         missing_cols = set(required_cols) - set(df.columns)
         if missing_cols:
             st.error(f"Error: Missing required columns: {missing_cols}")
             st.stop()
 
-        #Convert 'Rain' column to numeric (0 and 1) if it's not already
-        if df['Rain'].dtype == object: #Check if it's string type
-            rain_mapping = {'rain': 1, 'no rain': 0}
-            df['Rain'] = df['Rain'].map(rain_mapping)
+        #Clean and convert 'Rain' column to numeric (0 and 1)
+        if df['Rain'].dtype == object:
+            df['Rain'] = df['Rain'].str.lower().replace({'rain': 1, 'no rain': 0})
+            #Check for non-numeric values after cleaning
+            if not pd.to_numeric(df['Rain'], errors='coerce').notnull().all():
+                st.error("Error: Invalid values in 'Rain' column.  Please ensure it contains only 'rain' or 'no rain'.")
+                st.stop()
+            df['Rain'] = pd.to_numeric(df['Rain'])
+        elif not pd.to_numeric(df['Rain'], errors='coerce').notnull().all():
+            st.error("Error: Invalid values in 'Rain' column. Please ensure it contains only 0 or 1.")
+            st.stop()
+
 
         # --- Data Visualization --- (same as before) ...
 
@@ -44,8 +52,6 @@ if uploaded_file is not None:
         model = RandomForestClassifier(random_state=42)
         model.fit(X_train_scaled, y_train)
         y_pred_proba = model.predict_proba(X_test_scaled)
-
-        #Threshold at 0.5 for prediction
         y_pred = (y_pred_proba[:, 1] >= 0.5).astype(int)
 
         accuracy = accuracy_score(y_test, y_pred)
@@ -63,11 +69,6 @@ if uploaded_file is not None:
 
         # Example prediction (you'll need to provide new data)
         # ... (prediction code as before) ...
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-else:
-    st.write("Please upload a CSV file.")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
