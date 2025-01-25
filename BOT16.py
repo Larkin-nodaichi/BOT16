@@ -18,21 +18,27 @@ if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file, encoding='utf-8', on_bad_lines='skip')
 
-        # --- Mapping for 'Attack Type' column ---
+        #Check if 'Attack Type' column exists; if not, handle the error gracefully
+        if 'Attack Type' not in df.columns:
+            st.error("Error: 'Attack Type' column not found in the dataset. Please check your data.")
+            st.stop()
+
+        #Improved mapping with better error handling
         attack_mapping = {
             'phishing': 'Phishing',
             'malware': 'Malware',
             'dos': 'DoS',
             'ransomware': 'Ransomware',
-            'sql injection': 'SQL Injection', #Example
-            'brute force': 'Brute Force', #Example
+            'sql injection': 'SQL Injection',
+            'brute force': 'Brute Force',
             'unknown': 'Unknown'
         }
 
-        if 'Attack Type' in df.columns:
+        #Create Incident_Type column, handling potential errors
+        try:
             df['Incident_Type'] = df['Attack Type'].map(attack_mapping).fillna('Unknown')
-        else:
-            st.error("Error: 'Attack Type' column not found. Check your data or choose a different column.")
+        except KeyError as e:
+            st.error(f"Error: Key '{e}' not found in attack_mapping. Check your 'Attack Type' column values.")
             st.stop()
 
 
