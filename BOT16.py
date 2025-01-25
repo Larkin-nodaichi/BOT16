@@ -31,7 +31,7 @@ if uploaded_file is not None:
         X_test_scaled = scaler.transform(X_test)
 
         # Load the saved model and scaler using ABSOLUTE paths
-        model_dir = "weather_forecast_data" # **REPLACE THIS WITH THE ABSOLUTE PATH**
+        model_dir = "weather_forecast_data"  # **REPLACE THIS WITH THE ABSOLUTE PATH**
         best_model = joblib.load(os.path.join(model_dir, 'best_model.joblib'))
         scaler = joblib.load(os.path.join(model_dir, 'scaler.joblib'))
 
@@ -46,7 +46,7 @@ if uploaded_file is not None:
             st.write(f"Probability of Rain: {probability:.2f}")
 
     except FileNotFoundError:
-        st.error("Error: Could not find the saved model file.  Please check the absolute path.")
+        st.error("Error: Could not find the saved model file. Please check the absolute path.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
