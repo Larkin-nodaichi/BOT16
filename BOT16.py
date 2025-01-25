@@ -1,23 +1,32 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc
 from google.colab import files
-uploaded = files.upload()  # Upload `mushrooms.csv` here
+import matplotlib.pyplot as plt
+import joblib #Import joblib for model saving
+
+# --- Data Loading and Preprocessing ---
+uploaded = files.upload()
 df = pd.read_csv('weather_forecast_data.csv')
-df = pd.DataFrame(data)
 
-
-#Handle Missing Values (Example: Imputation with mean for numerical features)
+#Handle Missing Values
 for col in df.columns:
     if pd.api.types.is_numeric_dtype(df[col]):
         df[col].fillna(df[col].mean(), inplace=True)
     else:
-        df[col].fillna(df[col].mode()[0], inplace=True) #Mode for categorical
-..
+        df[col].fillna(df[col].mode()[0], inplace=True)
 
-#Split data into features (X) and target (y)
+#Convert 'Rain' to numeric (0/1) if necessary
+if df['Rain'].dtype == object:
+    df['Rain'] = df['Rain'].str.lower().replace({'rain': 1, 'no rain': 0})
+    df['Rain'] = pd.to_numeric(df['Rain'])
+
+#Split data
 X = df.drop('Rain', axis=1)
 y = df['Rain']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -27,23 +36,9 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# --- Data Visualization (same as before) ---
 
-#Histograms
-df.hist(figsize=(10, 8))
-plt.show()
-
-#Scatter Plots (Example)
-sns.pairplot(df)
-plt.show()
-
-
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
-
+# --- Model Training ---
 models = {
     'Decision Tree': DecisionTreeClassifier(random_state=42),
     'Random Forest': RandomForestClassifier(random_state=42),
@@ -56,21 +51,25 @@ for name, model in models.items():
     results[name] = scores.mean()
 
 print(results)
-
 best_model_name = max(results, key=results.get)
 best_model = models[best_model_name]
 best_model.fit(X_train_scaled, y_train)
 
-from sklearn.metrics import confusion_matrix, roc_curve, auc
-import matplotlib.pyplot as plt
+#Save the model and scaler
+joblib.dump(best_model, 'best_model.joblib')
+joblib.dump(scaler, 'scaler.joblib')
 
+
+# --- Model Evaluation ---
 y_pred = best_model.predict(X_test_scaled)
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix:\n", cm)
 
-#ROC Curve (if applicable for your target variable)
+#ROC Curve
+le = LabelEncoder()
+y_test_encoded = le.fit_transform(y_test)
 y_prob = best_model.predict_proba(X_test_scaled)[:, 1]
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+fpr, tpr, thresholds = roc_curve(y_test_encoded, y_prob)
 roc_auc = auc(fpr, tpr)
 plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
 plt.plot([0, 1], [0, 1], 'k--')
@@ -83,14 +82,16 @@ plt.legend(loc="lower right")
 plt.show()
 
 
-
-
-
+# --- Streamlit App ---
 import streamlit as st
 
 st.title("Weather Forecast Prediction")
 
-# Input fields for new weather data
+# Load the saved model and scaler
+best_model = joblib.load('best_model.joblib')
+scaler = joblib.load('scaler.joblib')
+
+# Input fields
 temp = st.number_input("Temperature", min_value=-20, max_value=50)
 humidity = st.number_input("Humidity", min_value=0, max_value=100)
 wind_speed = st.number_input("Wind Speed", min_value=0, max_value=50)
