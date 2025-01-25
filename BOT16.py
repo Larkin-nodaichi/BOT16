@@ -1,3 +1,7 @@
+import joblib
+joblib.dump(best_model, 'best_model.joblib')
+joblib.dump(scaler, 'scaler.joblib')
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
