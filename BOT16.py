@@ -41,7 +41,6 @@ if uploaded_file is not None:
             st.error(f"Error: Key '{e}' not found in attack_mapping. Check your 'Attack Type' column values.")
             st.stop()
 
-
         # Preprocessing and Feature Engineering
         df.fillna(method='ffill', inplace=True)
 
