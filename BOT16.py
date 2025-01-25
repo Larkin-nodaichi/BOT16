@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -72,10 +71,7 @@ if uploaded_file is not None:
             st.write(f"Probability of Rain: {probability:.2f}")
 
     except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
-else:
-    st.write("Please upload a CSV file.")
-
         st.error(f"An error occurred: {e}")
 else:
     st.write("Please upload a CSV file.")
+
