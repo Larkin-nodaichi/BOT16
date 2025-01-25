@@ -31,7 +31,7 @@ if uploaded_file is not None:
         X_test_scaled = scaler.transform(X_test)
 
         # Load the saved model and scaler using ABSOLUTE paths
-        model_dir = r"C:\Users\Lenovo\Downloads\weather_forecast_data"  # **CORRECTED PATH - RAW STRING**
+        model_dir = "C:\\Users\\Lenovo\\Downloads\\weather_forecast_data"  # **CORRECTED PATH - RAW STRING**
         best_model = joblib.load(os.path.join(model_dir, 'best_model.joblib'))
         scaler = joblib.load(os.path.join(model_dir, 'scaler.joblib'))
 
